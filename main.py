@@ -1,6 +1,7 @@
 from tkinter import Tk, Button, PhotoImage, Label, LabelFrame, W, E, N, S, Entry, END, StringVar, Scrollbar, Toplevel
 from tkinter import ttk  # Provide access to themed widget
 import sqlite3
+from  datetime import datetime 
 
 
 class Todo:
@@ -21,6 +22,16 @@ class Todo:
         self.create_scrollbar()
         self.create_ud_btn()
         self.viewTask()
+        self.beginfieldDate.bind("<Button-1>",self.focusBeginDate)
+        self.beginfieldDate.bind("<Leave>",self.unfocusBeginDate)
+        self.endfieldDate.bind("<Button-1>",self.focusEndDate)
+        self.endfieldDate.bind("<Leave>",self.unfocusEndDate)
+        
+        self.beginfieldTime.bind("<Button-1>",self.focusBeginTime)
+        self.beginfieldTime.bind("<Leave>",self.unfocusBeginTime)
+        self.endfieldTime.bind("<Button-1>",self.focusEndTime)
+        self.endfieldTime.bind("<Leave>",self.unfocusEndTime)
+                        
 
     def execute_db_query(self, query, args=()):
         with sqlite3.connect(self.db_file) as conn:
@@ -89,18 +100,36 @@ class Todo:
         self.placefield.grid(row=2, column=2, pady=5)
         Label(labelframe, text=" Begin :", bg="sky blue").grid(
             row=3, column=1,  sticky=W, padx=5, pady=5)
-        self.beginfield = Entry(labelframe)
-        self.beginfield.grid(row=3, column=2, pady=5)
+
+        self.beginfieldTime = Entry(labelframe)
+        self.beginfieldDate = Entry(labelframe)
+        self.beginfieldTime.grid(row=3, column=2, pady=5)
+        self.beginfieldDate.grid(row=3, column=3, pady=5)
+        
         Label(labelframe, text=" End :", bg="sky blue").grid(
             row=4, column=1, sticky=W, padx=5, pady=5)
-        self.endfield = Entry(labelframe)
-        self.endfield.grid(row=4, column=2, pady=5)
+        self.endfieldTime = Entry(labelframe)
+        self.endfieldDate = Entry(labelframe)
+        self.endfieldTime.grid(row=4, column=2, pady=5)
+        self.endfieldDate.grid(row=4, column=3, pady=5)
+        
         Label(labelframe, text=" Task Description :", bg="sky blue").grid(
             row=5, column=1, sticky=W, padx=5, pady=5)
         self.descriptionfield = Entry(labelframe)
         self.descriptionfield.grid(row=5, column=2, pady=5)
         Button(labelframe, text="Add task", command=self.btnTaskAdd).grid(
             row=6, column=2, pady=5, sticky=E)
+
+
+        self.beginfieldTime.insert(0,"hh:mm")
+        self.beginfieldTime["fg"]='gray'
+        self.endfieldTime.insert(0,"hh:mm")
+        self.endfieldTime["fg"]='gray'
+
+        self.beginfieldDate.insert(0,"dd/mm/yyyy")
+        self.beginfieldDate["fg"]='gray'
+        self.endfieldDate.insert(0,"dd/mm/yyyy")
+        self.endfieldDate["fg"]='gray'
 
     def message_area(self):
         self.message = Label(text="Wait")
@@ -110,11 +139,18 @@ class Todo:
         self.tree = ttk.Treeview(height=10, column=("Name","Place","Begin", "End","Description"))
         self.tree.grid(row=6, column=0, columnspan=3)
         self.tree.heading("#0", text="id", anchor=N)
+        self.tree.column("#0",minwidth=5,width=35)
         self.tree.heading("Name", text="Task Name", anchor=N)
+        self.tree.column("Name",minwidth=5,width=100)
         self.tree.heading("Place", text="Place", anchor=N)
+        self.tree.column("Place",minwidth=5,width=100)
         self.tree.heading("Begin", text="Task begin", anchor=N)
+        self.tree.column("Begin",minwidth=5,width=100)
         self.tree.heading("End", text="Task end", anchor=N)
+        self.tree.column("End",minwidth=5,width=100)
         self.tree.heading("Description", text="Description", anchor=N)
+        self.tree.column("Description",minwidth=5, width=150)
+
 
     def create_scrollbar(self):
         self.scrollbar = Scrollbar(orient='vertical', command=self.tree.yview)
@@ -125,6 +161,85 @@ class Todo:
             row=9, column=0, sticky=W, padx=5, pady=5)
         Button(text="Delete selected", command='', bg="red", fg="white").grid(
             row=9, column=2, sticky=E, padx=5, pady=5)
+
+    # PlaceHolder
+#Time
+    def focusBeginTime(self,*args):
+        self.beginfieldTime.delete(0,'end')
+        self.beginfieldTime["fg"]="black"
+
+    def unfocusBeginTime(self,*args):
+        if (len(self.beginfieldTime.get())==0):
+            self.beginfieldTime.delete(0,'end')
+            self.beginfieldTime.insert(0,"hh:mm")
+            self.beginfieldTime["fg"]="gray"
+        else:
+            self.validateTime(self.beginfieldTime.get())
+        self.root.focus()
+
+    
+    def focusEndTime(self,*args):
+        self.endfieldTime.delete(0,'end')
+        self.endfieldTime["fg"]="black"
+
+    def unfocusEndTime(self,*args):
+        if (len(self.endfieldTime.get())==0):
+            self.endfieldTime.delete(0,'end')
+            self.endfieldTime.insert(0,"hh:mm")
+            self.endfieldTime["fg"]="gray"
+        else:
+            self.validateTime(self.endfieldTime.get())
+        self.root.focus()
+
+#Date
+    def focusBeginDate(self,*args):
+        print("Date Foscus begin")
+        print(self.beginfieldDate.get()!= "dd/mm/yyy")
+        if (self.beginfieldDate.get()!= "dd/mm/yyy"):
+            print("DAte ", self.beginfieldDate.get())
+            self.beginfieldDate.delete(0,'end')
+            self.beginfieldDate["fg"]="black"
+
+    def unfocusBeginDate(self,*args):
+        print("Unfocus date begin")
+        if (len(self.beginfieldDate.get())==0):
+            self.beginfieldDate.delete(0,'end')
+            self.beginfieldDate.insert(0,"dd/mm/yyyy")
+            self.beginfieldDate["fg"]="gray"
+        else:
+            self.validateDate(self.beginfieldDate.get())
+        self.root.focus()
+
+    
+    def focusEndDate(self,*args):
+        self.endfieldDate.delete(0,'end')
+        self.endfieldDate["fg"]="black"
+
+    def unfocusEndDate(self,*args):
+        if (len(self.endfieldDate.get())==0):
+            self.endfieldDate.delete(0,'end')
+            self.endfieldDate.insert(0,"dd/mm/yyyy")
+            self.endfieldDate["fg"]="gray"
+        else:
+            self.validateDate(self.endfieldDate.get())
+        self.root.focus()
+
+    def validateDate(self,dateString):
+        format = "%d/%m/%Y"
+        try :
+            datetime.strptime(dateString, format)
+            print("Date valide")
+        except :
+            print("Date not valid")
+    
+    def validateTime(self,dateString):
+        format = "%H:%M"
+        try :
+            datetime.strptime(dateString, format)
+            print("Time valided")
+        except :
+            print("Time not valid")
+
 
 
 if __name__ == "__main__":
