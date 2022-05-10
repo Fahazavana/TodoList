@@ -62,8 +62,10 @@ class Todo:
     def add_new_task(self):
         if self.newtakIsValide():
             query = "INSERT INTO tasklist VALUES(NULL,?,?,?,?,?)"
-            TBegin = "{}-{}".format(self.beginfieldDate.get(), self.beginfieldTime.get())
-            TEnd = "{}-{}".format(self.endfieldDate.get(), self.endfieldTime.get())
+            TBegin = "{}-{}".format(self.beginfieldDate.get(),
+                                    self.beginfieldTime.get())
+            TEnd = "{}-{}".format(self.endfieldDate.get(),
+                                  self.endfieldTime.get())
             args = (
                 self.taskNameField.get(),
                 self.placefield.get(),
@@ -116,7 +118,7 @@ class Todo:
             valid5 = False
             self.errorList += "End Date is not valid\n"
 
-        return valid1 and valid2 and valid3 and valid4
+        return valid1 and valid2 and valid3 and valid4 and valid5
 
     def viewTask(self):
         items = self.tree.get_children()
@@ -216,15 +218,36 @@ class Todo:
         self.scrollbar.grid(row=6, column=3, rowspan=3, sticky="sn")
 
     def create_ud_btn(self):
-        Button(text="Modify selected", command="", bg="purple", fg="white").grid(
+        Button(text="Modify selected", command=self.edit, bg="purple", fg="white").grid(
             row=9, column=0, sticky=W, padx=5, pady=5
         )
-        Button(text="Delete selected", command="", bg="red", fg="white").grid(
+        Button(text="Delete selected", command=self.deleteTask, bg="red", fg="white").grid(
             row=9, column=2, sticky=E, padx=5, pady=5
         )
 
+    # EDition
+
+    def edit(self, *args):
+        selected = self.tree.selection()
+        if (len(selected) != 0):
+
+            print(selected[0])
+        else:
+            print("Select an item please")
+
+    def deleteTask(self, *arg):
+        selected = self.tree.selection()
+        if (len(selected) != 0):
+            task_id = self.tree.item(selected[0])['text']
+            query = "DELETE FROM tasklist WHERE id={}".format(task_id)
+            self.execute_db_query(query)
+            self.viewTask()
+        else:
+            print("Select an item please")
+
     # PlaceHolder
     # Time
+
     def focusBeginTime(self, *args):
         if self.beginfieldTime.get() == "hh:mm":
             self.beginfieldTime.delete(0, "end")
